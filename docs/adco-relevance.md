@@ -1,6 +1,6 @@
 # AD&Co-Style Relevance
 
-This project is designed to resemble the kind of repeatable data hygiene step that can support a mortgage research or structured finance analytics workflow.
+This AD&Co-inspired portfolio project is designed to resemble the kind of repeatable data hygiene step that can support a mortgage research or structured finance analytics workflow.
 
 Relevant capabilities:
 
@@ -10,5 +10,4 @@ Relevant capabilities:
 - Keep assumptions explicit in code and documentation.
 - Use synthetic/public-style data only.
 
-This is an independent portfolio project. It is not an official AD&Co tool, and it does not contain confidential company data.
-
+This is an independent portfolio project. It is not an official AD&Co tool, and it does not contain confidential company data, internal systems, private client data, or proprietary files.

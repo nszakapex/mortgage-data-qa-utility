@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repository is a portfolio project for mortgage-style CSV data QA using Python, pandas, and pytest.
+This repository is a portfolio project for mortgage-style CSV data QA using Python, pandas, pytest, and SQL-style analytical thinking.
 
 When making changes:
 
@@ -9,6 +9,7 @@ When making changes:
 - Use only synthetic or public-style sample data.
 - Never describe the project as an official company tool.
 - Avoid financial conclusions; report data quality conditions only.
+- Debug Python and SQL-style logic carefully: reproduce the issue, isolate the smallest failing check, and preserve analyst-readable output.
 - Run `pytest` before handing off changes.
 
 Recommended local commands:

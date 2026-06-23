@@ -16,7 +16,7 @@ This is an independent learning and portfolio project. It is not an official AD&
 
 Mortgage analytics workflows often start with basic trust checks: is the data complete, parseable, deduplicated, and within expected review bands? This project shows how to turn those checks into repeatable code that can support research-style data intake before deeper cohort, performance, or pool analysis.
 
-## Quick Start
+## Install
 
 ```bash
 cd mortgage-data-qa-utility
@@ -24,6 +24,11 @@ python -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+```
+
+## Run the CLI
+
+```bash
 $env:PYTHONPATH = "src"
 python -m mortgage_data_qa.report sample_data\synthetic_mortgage_loans.csv --output qa_report.md
 ```
@@ -54,8 +59,9 @@ The workflow in `.github/workflows/test.yml` includes `workflow_dispatch`, so te
 
 1. Open the repository on GitHub.
 2. Go to **Actions**.
-3. Select **Python tests**.
+3. Select **Test Project**.
 4. Tap **Run workflow**.
+5. Choose the `main` branch.
 
 ## Sample Data Schema
 
@@ -78,7 +84,7 @@ The sample CSV intentionally includes a few synthetic QA issues so the report de
 
 ## AD&Co Relevance
 
-This project is relevant to an AD&Co-style research and data workflow because it demonstrates:
+This project is relevant to an AD&Co-inspired research and data workflow because it demonstrates:
 
 - Data intake checks before analysis.
 - Repeatable validation logic for loan-level or pool-level CSV files.
