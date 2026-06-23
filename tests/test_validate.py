@@ -1,9 +1,6 @@
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mortgage_data_qa.validate import validate_dataframe
 
@@ -76,3 +73,12 @@ def test_clean_dataframe_passes_without_errors_or_warnings():
     assert result.error_count == 0
     assert result.warning_count == 0
 
+
+def test_clean_sample_csv_passes_validation():
+    sample_path = Path(__file__).resolve().parents[1] / "sample_data" / "synthetic_mortgage_loans_clean.csv"
+    dataframe = pd.read_csv(sample_path)
+
+    result = validate_dataframe(dataframe)
+
+    assert result.passed
+    assert result.issues == []

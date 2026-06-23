@@ -31,6 +31,7 @@ python -m pip install -r requirements.txt
 ```bash
 $env:PYTHONPATH = "src"
 python -m mortgage_data_qa.report sample_data\synthetic_mortgage_loans.csv --output qa_report.md
+python -m mortgage_data_qa.report sample_data\synthetic_mortgage_loans_clean.csv --output clean_qa_report.md
 ```
 
 On macOS or Linux, use:
@@ -40,17 +41,32 @@ export PYTHONPATH=src
 python -m mortgage_data_qa.report sample_data/synthetic_mortgage_loans.csv --output qa_report.md
 ```
 
+## Sample QA Report Excerpt
+
+The intentionally flawed sample produces a report section like this:
+
+```markdown
+## QA Status
+
+- Status: FAIL
+- Rows reviewed: 16
+- Columns reviewed: 12
+- Error checks triggered: 8
+- Warning checks triggered: 1
+```
+
+The clean sample is included as a quick PASS case for demos and regression checks.
+
 ## Run Tests
 
 ```bash
-$env:PYTHONPATH = "src"
 python -m pytest
 ```
 
 On macOS or Linux:
 
 ```bash
-PYTHONPATH=src python -m pytest
+python -m pytest
 ```
 
 ## GitHub Actions
@@ -80,7 +96,7 @@ The workflow in `.github/workflows/test.yml` includes `workflow_dispatch`, so te
 | `current_balance` | Current unpaid principal balance-style field | `286450.25` |
 | `loan_age_months` | Months since origination | `63` |
 
-The sample CSV intentionally includes a few synthetic QA issues so the report demonstrates the validator.
+The `synthetic_mortgage_loans.csv` sample intentionally includes a few synthetic QA issues so the report demonstrates the validator. The `synthetic_mortgage_loans_clean.csv` sample uses the same schema but should pass validation.
 
 ## AD&Co Relevance
 

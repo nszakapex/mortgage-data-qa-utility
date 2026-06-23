@@ -1,9 +1,4 @@
-from pathlib import Path
-import sys
-
 import pandas as pd
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from mortgage_data_qa.report import generate_markdown_report
 from mortgage_data_qa.summarize import format_summary_markdown, summarize_dataframe
@@ -73,4 +68,3 @@ def test_generate_markdown_report_includes_findings_table():
     assert "# Mortgage Data QA Report: unit_test.csv" in report
     assert "| Severity | Check | Count | Columns | Rows | Examples |" in report
     assert "duplicate_loan_id" in report
-

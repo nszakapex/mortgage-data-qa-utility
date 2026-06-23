@@ -16,6 +16,6 @@ Recommended local commands:
 
 ```bash
 python -m pip install -r requirements.txt
-PYTHONPATH=src python -m pytest
+python -m pytest
 PYTHONPATH=src python -m mortgage_data_qa.report sample_data/synthetic_mortgage_loans.csv --output qa_report.md
 ```
