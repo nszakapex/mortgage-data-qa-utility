@@ -18,28 +18,46 @@ Mortgage analytics workflows often start with basic trust checks: is the data co
 
 ## Install
 
+This is a Python CLI and data utility, not a UI application. A future Streamlit front end could be added later, but the current version is meant to be run from the command line.
+
 ```bash
 cd mortgage-data-qa-utility
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -e .
+```
+
+For development dependencies (pytest, ruff):
+
+```bash
+python -m pip install -e ".[dev]"
 ```
 
 ## Run the CLI
 
-```bash
-$env:PYTHONPATH = "src"
-python -m mortgage_data_qa.report sample_data\synthetic_mortgage_loans.csv --output qa_report.md
-python -m mortgage_data_qa.report sample_data\synthetic_mortgage_loans_clean.csv --output clean_qa_report.md
-```
-
-On macOS or Linux, use:
+After editable install, validate a sample CSV and print a markdown QA report to stdout:
 
 ```bash
-export PYTHONPATH=src
-python -m mortgage_data_qa.report sample_data/synthetic_mortgage_loans.csv --output qa_report.md
+python -m mortgage_data_qa sample_data/synthetic_mortgage_loans.csv
+python -m mortgage_data_qa sample_data/clean_mortgage_loans.csv
 ```
+
+Write the report to a file:
+
+```bash
+python -m mortgage_data_qa sample_data/synthetic_mortgage_loans.csv --output qa_report.md
+```
+
+Optional console script entry point:
+
+```bash
+mortgage-data-qa sample_data/synthetic_mortgage_loans.csv
+mortgage-data-qa sample_data/clean_mortgage_loans.csv
+```
+
+`qa_report.md` is gitignored, so generated reports stay local unless you choose another output path.
 
 ## Sample QA Report Excerpt
 
@@ -55,18 +73,12 @@ The intentionally flawed sample produces a report section like this:
 - Warning checks triggered: 1
 ```
 
-The clean sample is included as a quick PASS case for demos and regression checks.
+The clean sample (`sample_data/clean_mortgage_loans.csv`) is included as a quick PASS case for demos and regression checks.
 
 ## Run Tests
 
 ```bash
-python -m pytest
-```
-
-On macOS or Linux:
-
-```bash
-python -m pytest
+python -m pytest -q
 ```
 
 ## GitHub Actions
@@ -96,7 +108,7 @@ The workflow in `.github/workflows/test.yml` includes `workflow_dispatch`, so te
 | `current_balance` | Current unpaid principal balance-style field | `286450.25` |
 | `loan_age_months` | Months since origination | `63` |
 
-The `synthetic_mortgage_loans.csv` sample intentionally includes a few synthetic QA issues so the report demonstrates the validator. The `synthetic_mortgage_loans_clean.csv` sample uses the same schema but should pass validation.
+The `synthetic_mortgage_loans.csv` sample intentionally includes a few synthetic QA issues so the report demonstrates the validator. The `clean_mortgage_loans.csv` and `synthetic_mortgage_loans_clean.csv` samples use the same schema but should pass validation.
 
 ## AD&Co Relevance
 

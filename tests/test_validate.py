@@ -75,10 +75,9 @@ def test_clean_dataframe_passes_without_errors_or_warnings():
 
 
 def test_clean_sample_csv_passes_validation():
-    sample_path = Path(__file__).resolve().parents[1] / "sample_data" / "synthetic_mortgage_loans_clean.csv"
-    dataframe = pd.read_csv(sample_path)
-
-    result = validate_dataframe(dataframe)
-
-    assert result.passed
-    assert result.issues == []
+    sample_dir = Path(__file__).resolve().parents[1] / "sample_data"
+    for filename in ("clean_mortgage_loans.csv", "synthetic_mortgage_loans_clean.csv"):
+        dataframe = pd.read_csv(sample_dir / filename)
+        result = validate_dataframe(dataframe)
+        assert result.passed, filename
+        assert result.issues == [], filename
