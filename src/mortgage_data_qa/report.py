@@ -72,9 +72,18 @@ def generate_markdown_report(
         [
             "## Notes",
             "",
-            "- Findings identify data quality conditions only; they do not imply credit, valuation, or investment conclusions.",
-            "- Review thresholds are intentionally simple and should be adjusted for the dataset owner, product scope, and research question.",
-            "- Do not run this utility on confidential company data unless the environment and permissions have been explicitly approved.",
+            (
+                "- Findings identify data quality conditions only; they do not imply credit, valuation, "
+                "or investment conclusions."
+            ),
+            (
+                "- Review thresholds are intentionally simple and should be adjusted for the dataset owner, "
+                "product scope, and research question."
+            ),
+            (
+                "- Do not run this utility on confidential company data unless the environment and permissions "
+                "have been explicitly approved."
+            ),
             "",
         ]
     )
@@ -104,4 +113,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
