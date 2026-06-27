@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2,<3.0",
+    "streamlit>=1.36,<2.0",
 ]
+
+[project.scripts]
+mortgage-data-qa = "mortgage_data_qa.report:main"
 
 [project.optional-dependencies]
 dev = [
@@ -24,4 +28,3 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F"]
-
