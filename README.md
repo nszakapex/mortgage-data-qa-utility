@@ -8,8 +8,10 @@ This is an independent learning and portfolio project. It is not an official AD&
 
 - Validates required mortgage-style fields.
 - Flags missing values, duplicate `loan_id` values, malformed dates, invalid numeric ranges, invalid loan purposes, negative balances, and suspicious coupons.
+- Validates pool/research-style Excel workbook sheets with a separate profile.
 - Summarizes agencies, product types, purposes, vintages, date ranges, and numeric fields.
 - Generates a markdown report suitable for analyst review.
+- Provides both a CLI and a lightweight Streamlit UI for demo/workflow testing.
 - Includes synthetic sample data and pytest coverage.
 
 ## Why It Matters
@@ -18,22 +20,16 @@ Mortgage analytics workflows often start with basic trust checks: is the data co
 
 ## Install
 
-This is a Python CLI and data utility, not a UI application. A future Streamlit front end could be added later, but the current version is meant to be run from the command line.
-
 ```bash
 cd mortgage-data-qa-utility
 python -m venv .venv
 source .venv/bin/activate          # macOS/Linux
 # .venv\Scripts\activate           # Windows
 python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-For development dependencies (pytest, ruff):
-
-```bash
 python -m pip install -e ".[dev]"
 ```
+
+`pyproject.toml` is the canonical dependency source. `requirements.txt` is kept as a simple mirror for local environments that still prefer requirements-based installs.
 
 ## Run the CLI
 
@@ -59,6 +55,25 @@ mortgage-data-qa sample_data/clean_mortgage_loans.csv
 
 `qa_report.md` is gitignored, so generated reports stay local unless you choose another output path.
 
+## Run the Streamlit UI
+
+The project includes a lightweight drag-and-drop UI for demo and workflow testing. It reuses the existing package validation and markdown report functions; it does not add a database, AI features, or external services.
+
+```bash
+streamlit run streamlit_app.py
+```
+
+The Streamlit UI lets you:
+
+- Drag and drop a synthetic or approved mortgage-style CSV or Excel workbook.
+- Choose a validation profile: loan-level, mortgage research workbook, or generic research table.
+- Validate a single sheet or all sheets in an Excel workbook.
+- View pass/fail status, summary metrics, issue details, and grouped findings.
+- Test with synthetic sample CSVs or the synthetic research workbook without uploading anything.
+- Download the generated markdown report as `qa_report.md`.
+
+Do not upload confidential, client, proprietary, or internal company data. This is an independent AD&Co-inspired portfolio project, not an official AD&Co tool.
+
 ## Sample QA Report Excerpt
 
 The intentionally flawed sample produces a report section like this:
@@ -73,7 +88,7 @@ The intentionally flawed sample produces a report section like this:
 - Warning checks triggered: 1
 ```
 
-The clean sample (`sample_data/clean_mortgage_loans.csv`) is included as a quick PASS case for demos and regression checks.
+The clean sample (`sample_data/clean_mortgage_loans.csv`) is included as a quick PASS case for demos and regression checks. `sample_data/synthetic_pool_research.xlsx` provides a synthetic PASS case for the mortgage research workbook profile.
 
 ## Run Tests
 
@@ -141,10 +156,15 @@ It is not affiliated with, endorsed by, or built for official use by AD&Co.
 ```text
 mortgage-data-qa-utility/
   src/mortgage_data_qa/
+    __main__.py
     schema.py
     validate.py
+    profiles.py
+    research_profiles.py
     summarize.py
+    ui_summary.py
     report.py
+  streamlit_app.py
   tests/
   sample_data/
   docs/

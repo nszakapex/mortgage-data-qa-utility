@@ -51,8 +51,6 @@ def generate_markdown_report(
         )
 
     lines.extend([format_summary_markdown(summary), "", "## QA Findings", ""])
-
-    lines.extend(["## QA Findings", ""])
     lines.extend(_format_issues_table(result.issues))
     lines.extend(_report_notes())
 
