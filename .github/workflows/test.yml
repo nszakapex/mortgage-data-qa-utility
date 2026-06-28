@@ -31,3 +31,8 @@ jobs:
       - name: Run tests
         run: |
           pytest -q
+
+      - name: Streamlit import smoke check
+        run: |
+          python -c "import streamlit_app"
+          python -m py_compile streamlit_app.py
