@@ -8,6 +8,7 @@ This is an independent learning and portfolio project. It is not an official AD&
 
 - Validates required mortgage-style fields.
 - Flags missing values, duplicate `loan_id` values, malformed dates, invalid numeric ranges, invalid loan purposes, negative balances, and suspicious coupons.
+- Validates pool/research-style Excel workbook sheets with a separate profile.
 - Summarizes agencies, product types, purposes, vintages, date ranges, and numeric fields.
 - Generates a markdown report suitable for analyst review.
 - Provides both a CLI and a lightweight Streamlit UI for demo/workflow testing.
@@ -22,7 +23,8 @@ Mortgage analytics workflows often start with basic trust checks: is the data co
 ```bash
 cd mortgage-data-qa-utility
 python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
@@ -31,17 +33,27 @@ python -m pip install -e ".[dev]"
 
 ## Run the CLI
 
+After editable install, validate a sample CSV and print a markdown QA report to stdout:
+
 ```bash
-python -m mortgage_data_qa sample_data\synthetic_mortgage_loans.csv --output qa_report.md
-python -m mortgage_data_qa sample_data\clean_mortgage_loans.csv --output clean_qa_report.md
-mortgage-data-qa sample_data\synthetic_mortgage_loans.csv
+python -m mortgage_data_qa sample_data/synthetic_mortgage_loans.csv
+python -m mortgage_data_qa sample_data/clean_mortgage_loans.csv
 ```
 
-On macOS or Linux, use:
+Write the report to a file:
 
 ```bash
 python -m mortgage_data_qa sample_data/synthetic_mortgage_loans.csv --output qa_report.md
 ```
+
+Optional console script entry point:
+
+```bash
+mortgage-data-qa sample_data/synthetic_mortgage_loans.csv
+mortgage-data-qa sample_data/clean_mortgage_loans.csv
+```
+
+`qa_report.md` is gitignored, so generated reports stay local unless you choose another output path.
 
 ## Run the Streamlit UI
 
@@ -53,10 +65,11 @@ streamlit run streamlit_app.py
 
 The Streamlit UI lets you:
 
-- Drag and drop a synthetic or approved mortgage-style CSV.
-- Run the same deterministic QA checks used by the CLI.
+- Drag and drop a synthetic or approved mortgage-style CSV or Excel workbook.
+- Choose a validation profile: loan-level, mortgage research workbook, or generic research table.
+- Validate a single sheet or all sheets in an Excel workbook.
 - View pass/fail status, summary metrics, issue details, and grouped findings.
-- Test with the flawed sample CSV or the clean sample CSV without uploading anything.
+- Test with synthetic sample CSVs or the synthetic research workbook without uploading anything.
 - Download the generated markdown report as `qa_report.md`.
 
 Do not upload confidential, client, proprietary, or internal company data. This is an independent AD&Co-inspired portfolio project, not an official AD&Co tool.
@@ -75,18 +88,12 @@ The intentionally flawed sample produces a report section like this:
 - Warning checks triggered: 1
 ```
 
-The clean sample is included as a quick PASS case for demos and regression checks.
+The clean sample (`sample_data/clean_mortgage_loans.csv`) is included as a quick PASS case for demos and regression checks. `sample_data/synthetic_pool_research.xlsx` provides a synthetic PASS case for the mortgage research workbook profile.
 
 ## Run Tests
 
 ```bash
 python -m pytest -q
-```
-
-On macOS or Linux:
-
-```bash
-python -m pytest
 ```
 
 ## GitHub Actions
@@ -116,7 +123,7 @@ The workflow in `.github/workflows/test.yml` includes `workflow_dispatch`, so te
 | `current_balance` | Current unpaid principal balance-style field | `286450.25` |
 | `loan_age_months` | Months since origination | `63` |
 
-The `synthetic_mortgage_loans.csv` sample intentionally includes a few synthetic QA issues so the report demonstrates the validator. The `synthetic_mortgage_loans_clean.csv` sample uses the same schema but should pass validation. `clean_mortgage_loans.csv` is a short alias of the clean sample for copy/paste-friendly CLI demos.
+The `synthetic_mortgage_loans.csv` sample intentionally includes a few synthetic QA issues so the report demonstrates the validator. The `clean_mortgage_loans.csv` and `synthetic_mortgage_loans_clean.csv` samples use the same schema but should pass validation.
 
 ## AD&Co Relevance
 
@@ -152,6 +159,8 @@ mortgage-data-qa-utility/
     __main__.py
     schema.py
     validate.py
+    profiles.py
+    research_profiles.py
     summarize.py
     ui_summary.py
     report.py

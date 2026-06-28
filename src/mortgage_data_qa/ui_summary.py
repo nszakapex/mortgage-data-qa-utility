@@ -5,10 +5,11 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import Any
 
+from mortgage_data_qa.research_profiles import WorkbookValidationResult
 from mortgage_data_qa.validate import ValidationIssue, ValidationResult
 
 
-SUMMARY_CHECKS = {
+LOAN_LEVEL_CHECKS = {
     "duplicate_loan_id": "duplicate_loan_ids",
     "missing_required_columns": "missing_required_columns",
     "missing_values": "missing_values",
@@ -23,7 +24,7 @@ SUMMARY_CHECKS = {
 
 
 def summarize_validation_result(result: ValidationResult) -> dict[str, int | bool]:
-    """Return compact metric counts derived from existing validation issues."""
+    """Return compact metric counts derived from validation issues."""
 
     summary: dict[str, int | bool] = {
         "passed": result.passed,
@@ -31,15 +32,26 @@ def summarize_validation_result(result: ValidationResult) -> dict[str, int | boo
         "total_error_findings": _severity_count(result.issues, "ERROR"),
         "total_warning_findings": _severity_count(result.issues, "WARNING"),
     }
-    for metric_name in SUMMARY_CHECKS.values():
+    for metric_name in LOAN_LEVEL_CHECKS.values():
         summary[metric_name] = 0
 
     for issue in result.issues:
-        metric_name = SUMMARY_CHECKS.get(issue.check)
+        metric_name = LOAN_LEVEL_CHECKS.get(issue.check)
         if metric_name:
             summary[metric_name] = int(summary[metric_name]) + issue.count
 
     return summary
+
+
+def summarize_workbook_result(workbook_result: WorkbookValidationResult) -> dict[str, int | bool]:
+    return {
+        "passed": workbook_result.passed,
+        "total_rows": workbook_result.row_count,
+        "total_error_findings": workbook_result.error_count,
+        "total_warning_findings": workbook_result.warning_count,
+        "sheets_reviewed": len(workbook_result.sheet_results),
+        "sheets_failed": sum(1 for sheet in workbook_result.sheet_results if not sheet.result.passed),
+    }
 
 
 def issues_to_records(issues: list[ValidationIssue]) -> list[dict[str, Any]]:
@@ -60,6 +72,17 @@ def issues_to_records(issues: list[ValidationIssue]) -> list[dict[str, Any]]:
                     "details": _issue_details(issue),
                 }
             )
+    return records
+
+
+def workbook_issues_to_records(workbook_result: WorkbookValidationResult) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for sheet in workbook_result.sheet_results:
+        for record in issues_to_records(sheet.result.issues):
+            record = dict(record)
+            record["sheet"] = sheet.sheet_name
+            record["layout"] = sheet.sheet_type
+            records.append(record)
     return records
 
 

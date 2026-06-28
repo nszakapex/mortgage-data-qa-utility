@@ -1,7 +1,12 @@
 import pandas as pd
 
-from mortgage_data_qa.ui_summary import issues_to_records, summarize_validation_result
+from mortgage_data_qa.ui_summary import issues_to_records, summarize_validation_result, summarize_workbook_result
 from mortgage_data_qa.validate import validate_dataframe
+from mortgage_data_qa.research_profiles import (
+    SheetValidationResult,
+    WorkbookValidationResult,
+    validate_vintage_balance_sheet,
+)
 
 
 def test_summarize_validation_result_counts_issue_findings():
@@ -59,3 +64,23 @@ def test_issues_to_records_preserves_issue_context():
     assert records[0]["issue_type"] == "duplicate_loan_id"
     assert records[0]["severity"] == "ERROR"
     assert records[0]["column"] == "loan_id"
+
+
+def test_summarize_workbook_result_counts_sheets():
+    sheet_result = SheetValidationResult(
+        sheet_name="Investor_balance_vintageOrigin",
+        sheet_type="vintage_balance",
+        result=validate_vintage_balance_sheet(
+            pd.DataFrame({"Origination Year": [2021], "Balance": [100.0]}),
+        ),
+    )
+    workbook_result = WorkbookValidationResult(
+        file_name="synthetic_pool_research.xlsx",
+        sheet_results=[sheet_result],
+    )
+
+    summary = summarize_workbook_result(workbook_result)
+
+    assert summary["passed"] is True
+    assert summary["sheets_reviewed"] == 1
+    assert summary["sheets_failed"] == 0
