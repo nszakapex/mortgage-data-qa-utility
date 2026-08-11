@@ -36,7 +36,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-`pyproject.toml` is the canonical dependency source. `requirements.txt` is kept as a simple mirror.
+`pyproject.toml` is the canonical dependency source. `requirements.txt` installs the local package for Streamlit Cloud (`-e .`).
 
 ## CLI vs Streamlit
 
