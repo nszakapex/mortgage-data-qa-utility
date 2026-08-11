@@ -15,9 +15,11 @@ from mortgage_data_qa.validate import ValidationResult, load_csv, validate_dataf
 __all__ = [
     "ValidationResult",
     "build_report_from_csv",
+    "build_report_from_path",
     "generate_markdown_report",
     "generate_profile_report",
     "generate_research_workbook_report",
+    "list_excel_sheet_names",
     "load_csv",
     "main",
     "validate_dataframe",
@@ -104,8 +106,8 @@ def _report_notes() -> list[str]:
             "dataset owner, product scope, and research question."
         ),
         (
-            "- Do not run this utility on confidential company data unless the environment "
-            "and permissions have been explicitly approved."
+            "- Do not run this utility on confidential, client, proprietary, or internal "
+            "company data. Use synthetic or approved public-style data only."
         ),
         "",
     ]
@@ -233,13 +235,88 @@ def build_report_from_csv(csv_path: str | Path) -> str:
     return generate_markdown_report(dataframe, dataset_name=path.name, validation_result=result)
 
 
+def build_report_from_path(
+    input_path: str | Path,
+    *,
+    profile: str | None = None,
+    sheet_name: str | None = None,
+) -> str:
+    """Build a markdown QA report for a CSV or Excel path."""
+
+    from mortgage_data_qa.profiles import (
+        ValidationProfile,
+        default_profile_for_filename,
+        load_excel_sheet,
+        validate_dataframe_with_profile,
+        validate_workbook_file,
+    )
+
+    path = Path(input_path)
+    selected = ValidationProfile(profile) if profile else default_profile_for_filename(path.name)
+    suffix = path.suffix.lower()
+
+    if suffix in {".xlsx", ".xls"}:
+        if selected is ValidationProfile.MORTGAGE_RESEARCH_WORKBOOK:
+            workbook_result = validate_workbook_file(path, file_name=path.name, sheet_name=sheet_name)
+            return generate_research_workbook_report(workbook_result)
+
+        sheet = sheet_name or list_excel_sheet_names(path)[0]
+        dataframe = load_excel_sheet(path, sheet)
+        result = validate_dataframe_with_profile(dataframe, selected, sheet_name=sheet)
+        return generate_profile_report(
+            dataframe,
+            dataset_name=path.name,
+            profile=selected,
+            validation_result=result,
+            sheet_name=sheet,
+        )
+
+    if selected is ValidationProfile.LOAN_LEVEL:
+        return build_report_from_csv(path)
+
+    dataframe = pd.read_csv(path)
+    result = validate_dataframe_with_profile(dataframe, selected, sheet_name=sheet_name or path.stem)
+    return generate_profile_report(
+        dataframe,
+        dataset_name=path.name,
+        profile=selected,
+        validation_result=result,
+        sheet_name=sheet_name or path.stem,
+    )
+
+
+def list_excel_sheet_names(path: str | Path) -> list[str]:
+    workbook = pd.ExcelFile(path, engine="openpyxl")
+    return workbook.sheet_names
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a markdown QA report for a mortgage-style CSV.")
-    parser.add_argument("csv_path", help="Path to the CSV file to validate.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Generate a markdown QA report for synthetic/public-style mortgage CSV or Excel data."
+        )
+    )
+    parser.add_argument("input_path", help="Path to a CSV or Excel file to validate.")
+    parser.add_argument(
+        "--profile",
+        choices=[
+            "loan_level",
+            "mortgage_research_workbook",
+            "generic_research",
+        ],
+        help=(
+            "Validation profile. Defaults to loan_level for CSV and "
+            "mortgage_research_workbook for Excel."
+        ),
+    )
+    parser.add_argument(
+        "--sheet",
+        help="Optional Excel sheet name. For research workbooks, omit to validate all sheets.",
+    )
     parser.add_argument("--output", "-o", help="Optional markdown output path.")
     args = parser.parse_args()
 
-    report = build_report_from_csv(args.csv_path)
+    report = build_report_from_path(args.input_path, profile=args.profile, sheet_name=args.sheet)
     if args.output:
         Path(args.output).write_text(report, encoding="utf-8")
     else:

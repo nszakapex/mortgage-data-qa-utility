@@ -33,7 +33,10 @@ CSV_SAMPLES = {
     "Use flawed loan sample": SAMPLE_DIR / "synthetic_mortgage_loans.csv",
     "Use clean loan sample": SAMPLE_DIR / "clean_mortgage_loans.csv",
 }
-WORKBOOK_SAMPLE = SAMPLE_DIR / "synthetic_pool_research.xlsx"
+WORKBOOK_SAMPLES = {
+    "Use clean research workbook": SAMPLE_DIR / "synthetic_pool_research.xlsx",
+    "Use flawed research workbook": SAMPLE_DIR / "synthetic_pool_research_fail.xlsx",
+}
 
 PROFILE_OPTIONS = [
     ValidationProfile.LOAN_LEVEL,
@@ -81,8 +84,9 @@ def _render_input_controls() -> tuple[object | None, str]:
 
     with right:
         sample_options = ["No sample", *CSV_SAMPLES.keys()]
-        if WORKBOOK_SAMPLE.exists():
-            sample_options.append("Use synthetic research workbook")
+        sample_options.extend(
+            name for name, path in WORKBOOK_SAMPLES.items() if path.exists()
+        )
         sample_choice = st.selectbox("Or test with sample data", sample_options, index=0)
 
     return uploaded_file, sample_choice
@@ -99,8 +103,9 @@ def _resolve_upload(
         sample_path = CSV_SAMPLES[sample_choice]
         return sample_path.name, sample_path.read_bytes(), sample_path.suffix.lower()
 
-    if sample_choice == "Use synthetic research workbook":
-        return WORKBOOK_SAMPLE.name, WORKBOOK_SAMPLE.read_bytes(), WORKBOOK_SAMPLE.suffix.lower()
+    if sample_choice in WORKBOOK_SAMPLES:
+        sample_path = WORKBOOK_SAMPLES[sample_choice]
+        return sample_path.name, sample_path.read_bytes(), sample_path.suffix.lower()
 
     raise RuntimeError("No input selected")
 
@@ -189,8 +194,9 @@ def _run_table_validation(file_bytes: bytes, file_name: str, profile: Validation
 
 def _render_empty_state() -> None:
     st.info(
-        "Upload a CSV/Excel file or choose a synthetic sample to see pass/fail status, issue counts, row-level "
-        "findings, and a downloadable markdown QA report."
+        "Upload a CSV/Excel file or choose a synthetic sample to see pass/fail status, issue counts, "
+        "row-level findings, and a downloadable markdown QA report. Loan samples and clean/flawed "
+        "research workbooks are available for demos."
     )
 
 

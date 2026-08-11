@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repository is a portfolio project for mortgage-style CSV data QA using Python, pandas, pytest, and SQL-style analytical thinking.
+This repository is a portfolio project for mortgage-style CSV and Excel data QA using Python, pandas, pytest, Streamlit, and SQL-style analytical thinking.
 
 When making changes:
 
@@ -15,7 +15,9 @@ When making changes:
 Recommended local commands:
 
 ```bash
-python -m pip install -r requirements.txt
-python -m pytest
-PYTHONPATH=src python -m mortgage_data_qa.report sample_data/synthetic_mortgage_loans.csv --output qa_report.md
+python -m pip install -e ".[dev]"
+python -m pytest -q
+python -m mortgage_data_qa sample_data/synthetic_mortgage_loans.csv
+python -m mortgage_data_qa sample_data/synthetic_pool_research_fail.xlsx
+python -m streamlit run streamlit_app.py
 ```
