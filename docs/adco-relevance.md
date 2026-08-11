@@ -4,9 +4,11 @@ This AD&Co-inspired portfolio project is designed to resemble the kind of repeat
 
 Relevant capabilities:
 
-- Validate loan-level or pool-style CSV files before analysis.
+- Validate loan-level CSV files before analysis.
+- Validate pool/research-style Excel workbook sheets (vintage balance, CPR comparison, market-share summaries).
 - Identify fields that need remediation before cohorting or summary work.
 - Produce a concise markdown report that a researcher can scan.
+- Provide a lightweight Streamlit UI for demo and analyst walkthroughs.
 - Keep assumptions explicit in code and documentation.
 - Demonstrate Python, pandas, pytest, GitHub Actions, and SQL-style cohort thinking in a compact data-tools project.
 - Support internship-style discussion about repeatable data intake, analyst handoff, and responsible data boundaries.

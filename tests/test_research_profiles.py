@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from mortgage_data_qa.research_profiles import (
     detect_sheet_type,
@@ -160,10 +159,24 @@ def test_generic_research_profile_flags_empty_and_duplicate_rows():
 
 def test_synthetic_pool_research_workbook_passes():
     sample_path = Path(__file__).resolve().parents[1] / "sample_data" / "synthetic_pool_research.xlsx"
-    if not sample_path.exists():
-        pytest.skip("Synthetic workbook sample has not been generated yet.")
-
     result = validate_research_workbook(sample_path, file_name=sample_path.name)
 
     assert result.passed
     assert len(result.sheet_results) == 5
+    assert {sheet.sheet_name for sheet in result.sheet_results} == {
+        "Investor_balance_vintageOrigin",
+        "Owner_vs_Investor_CPR_30YR",
+        "Multi_unit_balance_vintage",
+        "SF_vs_Multi_CPR_30YR",
+        "Single_family_market_share",
+    }
+
+
+def test_synthetic_pool_research_fail_workbook_fails():
+    sample_path = Path(__file__).resolve().parents[1] / "sample_data" / "synthetic_pool_research_fail.xlsx"
+    result = validate_research_workbook(sample_path, file_name=sample_path.name)
+
+    assert not result.passed
+    assert result.error_count > 0
+    assert len(result.sheet_results) == 5
+    assert any(not sheet.result.passed for sheet in result.sheet_results)
