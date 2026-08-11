@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import io
+import sys
 from pathlib import Path
 
-import pandas as pd
-import streamlit as st
+# Streamlit Cloud may not resolve src/ layout until install finishes; keep imports reliable.
+_SRC_DIR = Path(__file__).resolve().parent / "src"
+if _SRC_DIR.is_dir() and str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
 
-from mortgage_data_qa.profiles import (
+import pandas as pd  # noqa: E402
+import streamlit as st  # noqa: E402
+
+from mortgage_data_qa.profiles import (  # noqa: E402
     ValidationProfile,
     default_profile_for_filename,
     load_excel_sheet,
@@ -16,15 +22,19 @@ from mortgage_data_qa.profiles import (
     validate_dataframe_with_profile,
     validate_workbook_file,
 )
-from mortgage_data_qa.report import generate_markdown_report, generate_profile_report, generate_research_workbook_report
-from mortgage_data_qa.ui_summary import (
+from mortgage_data_qa.report import (  # noqa: E402
+    generate_markdown_report,
+    generate_profile_report,
+    generate_research_workbook_report,
+)
+from mortgage_data_qa.ui_summary import (  # noqa: E402
     issue_to_dict,
     issues_to_records,
     summarize_validation_result,
     summarize_workbook_result,
     workbook_issues_to_records,
 )
-from mortgage_data_qa.validate import load_csv, validate_dataframe
+from mortgage_data_qa.validate import load_csv, validate_dataframe  # noqa: E402
 
 
 ROOT_DIR = Path(__file__).resolve().parent

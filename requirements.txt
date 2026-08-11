@@ -1,6 +1,3 @@
-# pyproject.toml is the canonical dependency source; this file mirrors the simple local setup.
-pandas>=2.2,<3.0
-openpyxl>=3.1,<4.0
-streamlit>=1.36,<2.0
-pytest>=8.0,<9.0
-ruff>=0.5,<1.0
+# Streamlit Cloud installs from this file.
+# `-e .` installs the local src/mortgage_data_qa package (and its deps from pyproject.toml).
+-e .
