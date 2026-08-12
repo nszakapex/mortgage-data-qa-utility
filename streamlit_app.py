@@ -72,6 +72,7 @@ def main() -> None:
     st.info(
         "Upload your own CSV for loan-level QA. Common header aliases such as `UPB`, `Note Rate`, "
         "`Credit Score`, and `Loan Number` are mapped automatically. "
+        "Pipe-delimited files (`.csv` with `|` separators) are auto-detected. "
         "For confidential/internal files, run locally instead of a public cloud app."
     )
     st.warning(
@@ -100,7 +101,7 @@ def _suggest_profile(file_bytes: bytes, file_name: str, suffix: str) -> Validati
     if suffix in {".xlsx", ".xls"}:
         return default_profile_for_filename(file_name)
     try:
-        preview = canonicalize_loan_level_columns(pd.read_csv(io.BytesIO(file_bytes)))
+        preview = load_csv(io.BytesIO(file_bytes))
         return suggest_profile_for_dataframe(preview, filename=file_name)
     except Exception:
         return default_profile_for_filename(file_name)

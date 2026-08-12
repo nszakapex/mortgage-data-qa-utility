@@ -274,7 +274,9 @@ def build_report_from_path(
     if selected is ValidationProfile.LOAN_LEVEL:
         return build_report_from_csv(path)
 
-    dataframe = pd.read_csv(path)
+    from mortgage_data_qa.validate import read_delimited_table
+
+    dataframe = read_delimited_table(path)
     result = validate_dataframe_with_profile(dataframe, selected, sheet_name=sheet_name or path.stem)
     return generate_profile_report(
         dataframe,
