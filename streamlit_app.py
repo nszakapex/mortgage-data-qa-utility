@@ -19,6 +19,7 @@ from mortgage_data_qa.profiles import (  # noqa: E402
     default_profile_for_filename,
     load_excel_sheet,
     profile_label,
+    suggest_profile_for_dataframe,
     validate_dataframe_with_profile,
     validate_workbook_file,
 )
@@ -26,6 +27,10 @@ from mortgage_data_qa.report import (  # noqa: E402
     generate_markdown_report,
     generate_profile_report,
     generate_research_workbook_report,
+)
+from mortgage_data_qa.schema import (  # noqa: E402
+    canonicalize_loan_level_columns,
+    matched_loan_level_columns,
 )
 from mortgage_data_qa.ui_summary import (  # noqa: E402
     issue_to_dict,
@@ -61,9 +66,19 @@ def main() -> None:
 
     st.title("Mortgage Data QA Utility")
     st.caption(
-        "Upload synthetic or approved mortgage-style CSV or Excel files to run data-quality checks before analysis."
+        "Upload a mortgage-style CSV (or Excel workbook) to run data-quality checks before analysis. "
+        "Sample files are synthetic; your own authorized CSV uploads are supported."
     )
-    st.warning("Do not upload confidential, client, proprietary, or internal company data.")
+    st.info(
+        "Upload your own CSV for loan-level QA. Common header aliases such as `UPB`, `Note Rate`, "
+        "`Credit Score`, and `Loan Number` are mapped automatically. "
+        "For confidential/internal files, run locally instead of a public cloud app."
+    )
+    st.warning(
+        "Only upload data you are authorized to process. This is an independent portfolio utility, "
+        "not an official AD&Co tool. Findings are data-quality checks only — not credit, valuation, "
+        "or investment conclusions."
+    )
 
     uploaded_file, sample_choice = _render_input_controls()
     if uploaded_file is None and sample_choice == "No sample":
@@ -71,7 +86,7 @@ def main() -> None:
         return
 
     file_name, file_bytes, suffix = _resolve_upload(uploaded_file, sample_choice)
-    default_profile = default_profile_for_filename(file_name)
+    default_profile = _suggest_profile(file_bytes, file_name, suffix)
     profile = _render_profile_selector(default_profile, suffix)
 
     if profile is ValidationProfile.MORTGAGE_RESEARCH_WORKBOOK and suffix in {".xlsx", ".xls"}:
@@ -81,15 +96,28 @@ def main() -> None:
     _run_table_validation(file_bytes, file_name, profile, suffix)
 
 
+def _suggest_profile(file_bytes: bytes, file_name: str, suffix: str) -> ValidationProfile:
+    if suffix in {".xlsx", ".xls"}:
+        return default_profile_for_filename(file_name)
+    try:
+        preview = canonicalize_loan_level_columns(pd.read_csv(io.BytesIO(file_bytes)))
+        return suggest_profile_for_dataframe(preview, filename=file_name)
+    except Exception:
+        return default_profile_for_filename(file_name)
+
+
 def _render_input_controls() -> tuple[object | None, str]:
     st.subheader("Data input")
     left, right = st.columns([2, 1], gap="large")
 
     with left:
         uploaded_file = st.file_uploader(
-            "Drag and drop a CSV or Excel file",
+            "Upload your CSV or Excel file",
             type=["csv", "xlsx", "xls"],
-            help="Use synthetic or approved mortgage-style files only.",
+            help=(
+                "Loan-level CSVs can use common aliases (UPB, Note Rate, FICO, etc.). "
+                "Use synthetic samples below for a quick demo."
+            ),
         )
 
     with right:
@@ -127,12 +155,21 @@ def _render_profile_selector(default_profile: ValidationProfile, suffix: str) ->
         "Validation profile",
         labels,
         index=default_index,
-        help="Loan-level checks apply to loan CSVs. Mortgage research workbook checks pool/research summary sheets.",
+        help=(
+            "Loan-level: mortgage loan CSVs. "
+            "Mortgage research workbook: pool/research Excel sheets. "
+            "Generic research: any tabular CSV when loan fields are incomplete."
+        ),
     )
     selected = PROFILE_OPTIONS[labels.index(selected_label)]
 
     if suffix in {".xlsx", ".xls"} and selected is ValidationProfile.LOAN_LEVEL:
         st.info("Excel workbooks are usually validated with the Mortgage research workbook profile.")
+    if suffix == ".csv" and selected is ValidationProfile.GENERIC_RESEARCH:
+        st.info(
+            "Generic research mode accepts any CSV columns. "
+            "Switch to Loan-level mortgage data if this file is a loan tape."
+        )
 
     return selected
 
@@ -173,10 +210,17 @@ def _run_table_validation(file_bytes: bytes, file_name: str, profile: Validation
         sheet_name = st.selectbox("Sheet", workbook.sheet_names)
         buffer.seek(0)
         dataframe = load_excel_sheet(buffer, sheet_name)
-    elif profile is ValidationProfile.LOAN_LEVEL:
-        dataframe = load_csv(buffer)
+        if profile is ValidationProfile.LOAN_LEVEL:
+            dataframe = canonicalize_loan_level_columns(dataframe)
     else:
-        dataframe = pd.read_csv(buffer)
+        dataframe = load_csv(buffer)
+
+    if profile is ValidationProfile.LOAN_LEVEL:
+        matched = matched_loan_level_columns(dataframe)
+        st.caption(
+            f"Recognized loan-level fields after header mapping: {len(matched)} / 12 "
+            f"({', '.join(f'`{name}`' for name in matched) or 'none'})"
+        )
 
     with st.spinner("Running deterministic QA checks..."):
         if profile is ValidationProfile.LOAN_LEVEL:
@@ -204,9 +248,8 @@ def _run_table_validation(file_bytes: bytes, file_name: str, profile: Validation
 
 def _render_empty_state() -> None:
     st.info(
-        "Upload a CSV/Excel file or choose a synthetic sample to see pass/fail status, issue counts, "
-        "row-level findings, and a downloadable markdown QA report. Loan samples and clean/flawed "
-        "research workbooks are available for demos."
+        "Upload your mortgage-style CSV to run QA checks, or choose a synthetic sample. "
+        "Loan-level mode maps common headers automatically; generic research mode accepts any table."
     )
 
 

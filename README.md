@@ -95,6 +95,22 @@ The Streamlit UI lets you:
 
 Do not upload confidential, client, proprietary, or internal company data. This is an independent AD&Co-inspired portfolio project, not an official AD&Co tool.
 
+## Upload your own CSV
+
+You can upload a real mortgage-style CSV for QA review:
+
+1. Prefer **local** Streamlit/CLI for confidential or internal files (not public Streamlit Cloud).
+2. Use profile **Loan-level mortgage data** for loan tapes.
+3. Common headers are mapped automatically, for example:
+   - `Loan Number` / `loan_number` → `loan_id`
+   - `UPB` / `Current UPB` → `current_balance`
+   - `Note Rate` / `Interest Rate` → `coupon`
+   - `Credit Score` → `fico`
+   - `Closing Date` / `Orig Date` → `origination_date`
+4. If the file is not a loan tape, choose **Generic research table**.
+
+This remains an independent portfolio utility — not an official AD&Co tool. Findings are data-quality checks only.
+
 ## Sample QA Report Excerpt
 
 The intentionally flawed loan sample produces a report section like this:

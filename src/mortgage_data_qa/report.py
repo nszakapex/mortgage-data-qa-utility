@@ -106,8 +106,8 @@ def _report_notes() -> list[str]:
             "dataset owner, product scope, and research question."
         ),
         (
-            "- Do not run this utility on confidential, client, proprietary, or internal "
-            "company data. Use synthetic or approved public-style data only."
+            "- Only process data you are authorized to use. Prefer a local run for confidential "
+            "or internal files; do not commit confidential CSVs to the repository."
         ),
         "",
     ]

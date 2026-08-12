@@ -18,6 +18,7 @@ from mortgage_data_qa.schema import (
     LTV_MIN,
     REQUIRED_COLUMNS,
     VALID_LOAN_PURPOSES,
+    canonicalize_loan_level_columns,
 )
 
 
@@ -58,9 +59,10 @@ class ValidationResult:
 
 
 def load_csv(csv_path: str | Path) -> pd.DataFrame:
-    """Load a CSV while preserving loan IDs as text."""
+    """Load a CSV and canonicalize common loan-level column aliases."""
 
-    return pd.read_csv(csv_path, dtype={"loan_id": "string"})
+    dataframe = pd.read_csv(csv_path)
+    return canonicalize_loan_level_columns(dataframe)
 
 
 def validate_csv(csv_path: str | Path) -> ValidationResult:
@@ -73,6 +75,7 @@ def validate_csv(csv_path: str | Path) -> ValidationResult:
 def validate_dataframe(dataframe: pd.DataFrame) -> ValidationResult:
     """Validate a dataframe that resembles a loan-level mortgage dataset."""
 
+    dataframe = canonicalize_loan_level_columns(dataframe)
     issues: list[ValidationIssue] = []
     missing_columns = [column for column in REQUIRED_COLUMNS if column not in dataframe.columns]
 
