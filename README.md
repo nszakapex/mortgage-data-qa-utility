@@ -107,7 +107,8 @@ You can upload a real mortgage-style CSV for QA review:
    - `Note Rate` / `Interest Rate` → `coupon`
    - `Credit Score` → `fico`
    - `Closing Date` / `Orig Date` → `origination_date`
-4. If the file is not a loan tape, choose **Generic research table**.
+4. Files named `.csv` that are actually pipe-delimited (`|`) are auto-detected.
+5. If the file is not a loan tape, choose **Generic research table**.
 
 This remains an independent portfolio utility — not an official AD&Co tool. Findings are data-quality checks only.
 

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass, field
+from io import StringIO
 from pathlib import Path
+from typing import BinaryIO, TextIO
 
 import pandas as pd
 
@@ -20,6 +23,8 @@ from mortgage_data_qa.schema import (
     VALID_LOAN_PURPOSES,
     canonicalize_loan_level_columns,
 )
+
+DELIMITER_CANDIDATES = (",", "|", "\t", ";")
 
 
 @dataclass(frozen=True)
@@ -58,10 +63,66 @@ class ValidationResult:
         return sum(1 for issue in self.issues if issue.severity == "WARNING")
 
 
-def load_csv(csv_path: str | Path) -> pd.DataFrame:
-    """Load a CSV and canonicalize common loan-level column aliases."""
+def detect_delimiter(text: str) -> str:
+    """Detect comma, pipe, tab, or semicolon delimiters from a text sample."""
 
-    dataframe = pd.read_csv(csv_path)
+    sample = "\n".join(line for line in text.splitlines()[:30] if line.strip())
+    if not sample:
+        return ","
+
+    try:
+        sniffed = csv.Sniffer().sniff(sample, delimiters="".join(DELIMITER_CANDIDATES))
+        if sniffed.delimiter in DELIMITER_CANDIDATES:
+            return sniffed.delimiter
+    except csv.Error:
+        pass
+
+    best_delimiter = ","
+    best_score = -1
+    for delimiter in DELIMITER_CANDIDATES:
+        rows = [line.split(delimiter) for line in sample.splitlines()]
+        if not rows:
+            continue
+        width = len(rows[0])
+        if width < 2:
+            continue
+        consistent = sum(1 for row in rows if len(row) == width)
+        score = consistent * width
+        if score > best_score:
+            best_score = score
+            best_delimiter = delimiter
+    return best_delimiter
+
+
+def _source_to_text(source: str | Path | BinaryIO | TextIO | bytes) -> str:
+    if isinstance(source, bytes):
+        return source.decode("utf-8-sig")
+    if isinstance(source, Path):
+        return source.read_text(encoding="utf-8-sig")
+    if isinstance(source, str):
+        path = Path(source)
+        if path.exists() and path.is_file():
+            return path.read_text(encoding="utf-8-sig")
+        return source
+
+    raw = source.read()
+    if isinstance(raw, bytes):
+        return raw.decode("utf-8-sig")
+    return str(raw)
+
+
+def read_delimited_table(source: str | Path | BinaryIO | TextIO | bytes) -> pd.DataFrame:
+    """Load a delimited table, auto-detecting comma/pipe/tab/semicolon separators."""
+
+    text = _source_to_text(source)
+    delimiter = detect_delimiter(text)
+    return pd.read_csv(StringIO(text), sep=delimiter)
+
+
+def load_csv(csv_path: str | Path | BinaryIO | TextIO | bytes) -> pd.DataFrame:
+    """Load a delimited loan-style file and canonicalize common column aliases."""
+
+    dataframe = read_delimited_table(csv_path)
     return canonicalize_loan_level_columns(dataframe)
 
 
