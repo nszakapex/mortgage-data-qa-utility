@@ -14,6 +14,7 @@ from mortgage_data_qa.research_profiles import (
     validate_research_sheet,
     validate_research_workbook,
 )
+from mortgage_data_qa.schema import looks_like_loan_level
 from mortgage_data_qa.validate import ValidationResult, validate_dataframe
 
 
@@ -35,6 +36,21 @@ def default_profile_for_filename(filename: str) -> ValidationProfile:
     if suffix in {".xlsx", ".xls"}:
         return ValidationProfile.MORTGAGE_RESEARCH_WORKBOOK
     return ValidationProfile.LOAN_LEVEL
+
+
+def suggest_profile_for_dataframe(
+    dataframe: pd.DataFrame,
+    *,
+    filename: str = "",
+) -> ValidationProfile:
+    """Suggest a profile from filename suffix and recognizable columns."""
+
+    suffix = Path(filename).suffix.lower()
+    if suffix in {".xlsx", ".xls"}:
+        return ValidationProfile.MORTGAGE_RESEARCH_WORKBOOK
+    if looks_like_loan_level(dataframe):
+        return ValidationProfile.LOAN_LEVEL
+    return ValidationProfile.GENERIC_RESEARCH
 
 
 def profile_label(profile: ValidationProfile | str) -> str:
