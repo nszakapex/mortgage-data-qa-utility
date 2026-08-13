@@ -36,7 +36,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-`pyproject.toml` is the canonical dependency source. `requirements.txt` installs the local package for Streamlit Cloud (`-e .`).
+`pyproject.toml` is the canonical dependency source for local installs. `requirements.txt` lists plain wheels for Streamlit Community Cloud; the app bootstraps `src/` so the local package imports without an editable install.
 
 ## CLI vs Streamlit
 
@@ -94,6 +94,12 @@ The Streamlit UI lets you:
 - Download the generated markdown report as `qa_report.md`.
 
 Do not upload confidential, client, proprietary, or internal company data. This is an independent AD&Co-inspired portfolio project, not an official AD&Co tool.
+
+### Streamlit Community Cloud
+
+Public demo tip: after pulling these dependency changes, open **Manage app → Reboot** (or redeploy from `main`) so Cloud reinstalls from `requirements.txt`.
+
+In **Advanced settings**, set Python to **3.12** to match this project. Community Cloud does not honor `.python-version` files.
 
 ## Upload your own CSV
 

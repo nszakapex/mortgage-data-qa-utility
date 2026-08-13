@@ -4,45 +4,63 @@ from __future__ import annotations
 
 import io
 import sys
+import traceback
 from pathlib import Path
 
-# Streamlit Cloud may not resolve src/ layout until install finishes; keep imports reliable.
-_SRC_DIR = Path(__file__).resolve().parent / "src"
-if _SRC_DIR.is_dir() and str(_SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(_SRC_DIR))
+# Streamlit Community Cloud often installs only requirements.txt wheels and may
+# skip a local editable build. Put src/ on sys.path so mortgage_data_qa imports
+# work without `pip install -e .`.
+_ROOT_DIR = Path(__file__).resolve().parent
+_SRC_DIR = _ROOT_DIR / "src"
+for _path in (_SRC_DIR, _ROOT_DIR):
+    _path_str = str(_path)
+    if _path.is_dir() and _path_str not in sys.path:
+        sys.path.insert(0, _path_str)
 
-import pandas as pd  # noqa: E402
-import streamlit as st  # noqa: E402
+try:
+    import pandas as pd
+    import streamlit as st
 
-from mortgage_data_qa.profiles import (  # noqa: E402
-    ValidationProfile,
-    default_profile_for_filename,
-    load_excel_sheet,
-    profile_label,
-    suggest_profile_for_dataframe,
-    validate_dataframe_with_profile,
-    validate_workbook_file,
-)
-from mortgage_data_qa.report import (  # noqa: E402
-    generate_markdown_report,
-    generate_profile_report,
-    generate_research_workbook_report,
-)
-from mortgage_data_qa.schema import (  # noqa: E402
-    canonicalize_loan_level_columns,
-    matched_loan_level_columns,
-)
-from mortgage_data_qa.ui_summary import (  # noqa: E402
-    issue_to_dict,
-    issues_to_records,
-    summarize_validation_result,
-    summarize_workbook_result,
-    workbook_issues_to_records,
-)
-from mortgage_data_qa.validate import load_csv, validate_dataframe  # noqa: E402
+    from mortgage_data_qa.profiles import (
+        ValidationProfile,
+        default_profile_for_filename,
+        load_excel_sheet,
+        profile_label,
+        suggest_profile_for_dataframe,
+        validate_dataframe_with_profile,
+        validate_workbook_file,
+    )
+    from mortgage_data_qa.report import (
+        generate_markdown_report,
+        generate_profile_report,
+        generate_research_workbook_report,
+    )
+    from mortgage_data_qa.schema import (
+        canonicalize_loan_level_columns,
+        matched_loan_level_columns,
+    )
+    from mortgage_data_qa.ui_summary import (
+        issue_to_dict,
+        issues_to_records,
+        summarize_validation_result,
+        summarize_workbook_result,
+        workbook_issues_to_records,
+    )
+    from mortgage_data_qa.validate import load_csv, validate_dataframe
+except Exception as exc:  # pragma: no cover - Cloud diagnostic path
+    try:
+        import streamlit as st
+    except Exception:
+        raise exc from None
+
+    st.set_page_config(page_title="Mortgage Data QA Utility", page_icon=":bar_chart:", layout="wide")
+    st.title("Mortgage Data QA Utility")
+    st.error("App startup failed while importing dependencies.")
+    st.code("".join(traceback.format_exception(exc)), language="text")
+    st.stop()
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = _ROOT_DIR
 SAMPLE_DIR = ROOT_DIR / "sample_data"
 CSV_SAMPLES = {
     "Use flawed loan sample": SAMPLE_DIR / "synthetic_mortgage_loans.csv",
